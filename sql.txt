@@ -1,0 +1,71 @@
+create table books(
+    book_id int(20) primary key auto_increment comment '书籍编号',
+    book_name varchar(20) comment '书籍名称',
+    book_writer varchar(15) comment '书籍作者',
+    book_type varchar(15) comment '书籍类型',
+    book_num int not null comment '书籍余量',
+    book_price varchar(15) comment '书籍价格',
+    book_date varchar(15) comment '发版日期'
+);
+
+create table reader(
+    reader_id int primary key auto_increment comment '读者id',
+    reader_name varchar(20) comment '读者姓名',
+    reader_password varchar(20) not null comment '读者密码',
+    reader_telephone varchar(20) not null comment '读者电话'
+);
+
+create table manager(
+    manager_id int primary key auto_increment comment '管理员id',
+    manager_name varchar(20) not null comment '管理员姓名',
+    manager_password varchar(20) not null comment '管理员密码'
+);
+
+create table borrow(
+    reader_id int ,
+    book_id int,
+    borrow_time DATE not null ,
+    return_time DATE not null,
+    foreign key(reader_id) references reader(reader_id),
+    foreign key(book_id) references books(book_id)
+);
+
+create trigger borrow_insert
+AFTER INSERT on borrow
+FOR EACH ROW
+begin
+    update borrow set return_time =TIMESTAMPADD (DAY ,14,borrow_time) where borrow_time = borrow_time;
+end;
+
+show triggers ;
+
+drop trigger borrow_insert;
+
+insert into books (book_name, book_writer, book_type, book_num, book_price, book_date) VALUES ('三体','刘慈欣','科幻','10','29.9','2006-05');
+insert into books (book_name, book_writer, book_type, book_num, book_price, book_date) VALUES ('三体2','刘慈欣','科幻','15','35.9','2008-05');
+
+
+insert into books (book_name, book_writer, book_type, book_num, book_price, book_date) VALUES ('三体3','刘慈欣','科幻','20','39.9','2010-11');
+insert into books (book_name, book_writer, book_type, book_num, book_price, book_date) VALUES ('边城','沈从文','中篇','18','19.9','1934-04');
+insert into books (book_name, book_writer, book_type, book_num, book_price, book_date) VALUES ('平凡的世界','路遥','长篇','8','49.9','1986-12');
+insert into books (book_name, book_writer, book_type, book_num, book_price, book_date) VALUES ('明朝那些事儿','当年明月','历史','40','38.9','2009-03');
+insert into books (book_name, book_writer, book_type, book_num, book_price, book_date) VALUES ('流浪地球','刘慈欣','科幻','15','25.9','2000-07');
+insert into books (book_name, book_writer, book_type, book_num, book_price, book_date) VALUES ('堂吉诃德','塞万提斯·萨维德','长篇','23','15.9','1605-04');
+insert into books (book_name, book_writer, book_type, book_num, book_price, book_date) VALUES ('围城','钱钟书','长篇','7','9.9','1947-03');
+insert into books (book_name, book_writer, book_type, book_num, book_price, book_date) VALUES ('倾城之恋','张爱玲','中篇','19','35.9','1943-09');
+
+insert into reader(reader_name, reader_password, reader_telephone) VALUES ('测试1','123','12345');
+insert into reader(reader_name, reader_password, reader_telephone) VALUES ('测试2','123','12345');
+
+
+ALTER TABLE borrow modify column return_time timestamp default CURRENT_TIMESTAMP;
+ALTER TABLE borrow modify column borrow_time timestamp default CURRENT_TIMESTAMP;
+
+select books.book_id ,books.book_name,books.book_writer,books.book_type,borrow.borrow_time, borrow.return_time
+from borrow join books on books.book_id = borrow.book_id where borrow.reader_id =11;
+
+select count(*) from (select books.book_id ,books.book_name,books.book_writer,books.book_type,borrow.borrow_time, borrow.return_time
+from borrow join books on books.book_id = borrow.book_id where borrow.reader_id =11) as totalnum;
+
+Alter table borrow drop foreign key borrow_ibfk_2;
+ALTER TABLE borrow ADD CONSTRAINT borrow_ibfk_2 FOREIGN KEY (book_id) REFERENCES books (book_id) ON DELETE CASCADE;
